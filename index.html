@@ -1222,9 +1222,15 @@ function generateText() {
   if (state.mode === 'words') {
     const pool = [...d.words];
     const count = state.lang === 'bn' ? 30 : 50;
-    const arr = [];
-    for (let i = 0; i < count; i++) arr.push(pool[Math.floor(Math.random() * pool.length)]);
-    state.words = arr;
+    // Shuffle and take unique words to avoid repeating the same word in one round.
+    const shuffled = pool.sort(() => Math.random() - 0.5);
+    state.words = shuffled.slice(0, Math.min(count, shuffled.length));
+    // If the pool is smaller than the requested count, fill remaining with fresh random picks.
+    while (state.words.length < count) {
+      const nextWord = pool[Math.floor(Math.random() * pool.length)];
+      if (!state.words.includes(nextWord)) state.words.push(nextWord);
+      else if (state.words.length + 1 > pool.length) state.words.push(nextWord);
+    }
   } else {
     const quotes = d.paragraphs;
     const q = quotes[Math.floor(Math.random() * quotes.length)];
